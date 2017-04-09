@@ -1,0 +1,17 @@
+{
+  "name": "chat-example",
+  "version": "0.0.1",
+  "description": "채팅 어플리케이션 예제",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "rkdgusrnrlrl@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.2"
+  }
+}
