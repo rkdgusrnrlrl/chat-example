@@ -16,4 +16,15 @@ members.get('/', function (req, res) {
         });
 });
 
+members.post('/validate', function (req, res) {
+    User.build(req.body)
+        .validate()
+        .then(function (err) {
+            res.send(err);
+        })
+        .catch(function (err) {
+            res.send(err);
+        });
+});
+
 module.exports = members;
