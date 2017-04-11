@@ -8,7 +8,7 @@ var seq = new Sequalize("sqlite", 'rkd', '123', {
     storage : __dirname + "/../../da.sqlite"
 });
 
-module.exports = seq.define('user', {
+var User = seq.define('user', {
     id : {
         type : Sequalize.STRING,
         primaryKey : true,
@@ -70,3 +70,7 @@ module.exports = seq.define('user', {
         }
     }
 });
+
+User.sync();
+
+module.exports = User;
