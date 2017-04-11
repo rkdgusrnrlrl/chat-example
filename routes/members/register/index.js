@@ -6,6 +6,7 @@ var path = require('path');
 var rootDir = path.dirname(require.main.filename);
 var memberRegister = require('express').Router();
 var User = require(rootDir+'/models/user');
+var LoginService = require(rootDir+'/services/LoginService');
 
 
 memberRegister.get('/', function (req, res) {
@@ -15,6 +16,7 @@ memberRegister.get('/', function (req, res) {
 memberRegister.post('/', function (req, res) {
     User.create(req.body)
         .then(function (user) {
+            LoginService.logind(req.session, user.toJSON());
             res.sendFile(rootDir+"/index.html");
         })
         .catch(function (err) {

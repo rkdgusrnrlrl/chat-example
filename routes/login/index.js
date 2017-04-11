@@ -5,6 +5,7 @@ var path = require('path');
 var rootDir = path.dirname(require.main.filename);
 var login = require('express').Router();
 var User = require(rootDir+'/models/user');
+var LoginService = require(rootDir+'/services/LoginService');
 
 login.get('/', function (req, res) {
     res.sendFile(rootDir+"/login.html");
@@ -21,11 +22,9 @@ login.post('/', function (req, res) {
             if (result.count == 1) {
                 var user = result.rows[0];
                 var plainUser = user.get({plain : true});
-                console.log(plainUser);
                 if (user.password === param.password) {
                     var session = req.session;
-                    session.logindUser = user.toJSON();
-                    session.isLogined = true;
+                    LoginService.logind(session, user);
                     res.redirect('/');
                 } else {
                     res.send("패스워드 불일치");
