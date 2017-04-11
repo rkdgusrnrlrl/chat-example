@@ -12,20 +12,25 @@
         #messages { list-style-type: none; margin: 0; padding: 0;}
         #messages li { padding: 5px; }
         #messages li:nth-child(odd) { background: #eee; }
+        .msg {margin-left: 10px;}
     </style>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         $(function () {
             var socket = io();
+
+
             $('form').submit(function () {
                 socket.emit('chat message', $('#m').val());
-                $('#m').val("");
                 return false;
             });
 
-            socket.on('chat message', function (msg) {
-                $('#messages').append($('<li>').text(msg));
+            socket.on('chat message', function (data) {
+                var $userName = $('<span class="msg">').text(data.userName);
+                var  $msg = $('<span class="msg">').text(data.msg);
+                var $li = $("<li>").append($userName, $msg);
+                $('#messages').append($li);
             });
         });
 
