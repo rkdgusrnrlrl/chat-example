@@ -7,7 +7,7 @@ var login = require('express').Router();
 var User = require(rootDir+'/models/user');
 
 login.get('/', function (req, res) {
-    res.sendFile(__dirname+"/login.html");
+    res.sendFile(rootDir+"/login.html");
 });
 
 login.post('/', function (req, res) {
@@ -23,7 +23,10 @@ login.post('/', function (req, res) {
                 var plainUser = user.get({plain : true});
                 console.log(plainUser);
                 if (user.password === param.password) {
-                    res.send(plainUser);
+                    var session = req.session;
+                    session.logindUser = user.toJSON();
+                    session.isLogined = true;
+                    res.redirect('/');
                 } else {
                     res.send("패스워드 불일치");
                 }
