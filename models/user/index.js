@@ -1,14 +1,12 @@
 /**
  * Created by rkdgusrnrlrl on 17. 4. 10.
  */
+var path = require('path');
+var rootDir = path.dirname(require.main.filename);
+var db = require(rootDir+'/models/db');
 var Sequalize = require('sequelize');
-var seq = new Sequalize("sqlite", 'rkd', '123', {
-    host : "localhost",
-    dialect : "sqlite",
-    storage : __dirname + "/../../da.sqlite"
-});
 
-var User = seq.define('user', {
+var User = db.define('user', {
     id : {
         type : Sequalize.STRING,
         primaryKey : true,
