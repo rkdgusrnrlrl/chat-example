@@ -14,7 +14,6 @@ function convertJson(chat) {
 
 members.get('/', function (req, res) {
     Chat.findAll({
-        limit : 30,
         order : [['createdAt', 'DESC']],
         include : [{model : User}]
     })
@@ -23,6 +22,29 @@ members.get('/', function (req, res) {
         .catch(err => res.json(err));
 });
 
-
+members.get('/previous', function (req, res) {
+    var seq = parseInt(req.param('seq'));
+    Chat.count({where : {
+        seq : {
+            $lt : seq
+        }
+    }})
+        .then((cnt) => {
+            var isFirstChat = !(cnt > 20);
+            var limit = isFirstChat ? cnt : 20;
+            return Chat.findAll({
+                where : {
+                    seq : {
+                        $lt : seq
+                    }
+                },
+                limit : limit,
+                order : [['createdAt', 'DESC']],
+                include : [{model : User}]
+            })
+                .then(chats => chats.map(chat => chat.convertJson()))
+                .then(chats => res.json({ isFirstChat : isFirstChat ,chats :chats}));
+        });
+});
 
 module.exports = members;

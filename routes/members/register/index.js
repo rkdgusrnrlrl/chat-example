@@ -24,7 +24,7 @@ memberRegister.post('/', function (req, res) {
         })
         .then(function (user) {
             LoginService.logind(req.session, user.toJSON());
-            res.sendFile(rootDir+"/view/index.html");
+            res.redirect('/');
         })
         .catch(function (err) {
             res.json(err);
