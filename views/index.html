@@ -5,18 +5,26 @@
     <title>Socket.IO chat</title>
     <style>
         *{margin: 0; padding: 0; box-sizing: border-box;}
-        body { font: 13px Helbetica, Arial;}
+        body { font: 13px Helbetica, Arial; height: 100%;}
         form {background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%;}
         form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
         form button { width : 9%; background: rgb(130, 224,255); border: none; padding : 10px; }
-        #messages { list-style-type: none; margin: 0; padding: 0;}
+        #messages { list-style-type: none; margin: 0; padding: 0; height: 80%;}
         #messages li { padding: 5px; }
         #messages li:nth-child(odd) { background: #eee; }
         .msg {margin-left: 10px;}
+
     </style>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        function appendMessage(data) {
+            var $userName = $('<span class="msg">').text(data.userName);
+            var $msg = $('<span class="msg">').text(data.msg);
+            var $li = $("<li>").append($userName, $msg);
+            $('#messages').append($li);
+        }
         $(function () {
             var socket = io();
 
@@ -26,11 +34,20 @@
                 return false;
             });
 
+            socket.on('init message', function (chats) {
+                console.log(chats);
+                _.each(chats, function (chat) {
+                    appendMessage(chat);
+                })
+            });
+
             socket.on('chat message', function (data) {
-                var $userName = $('<span class="msg">').text(data.userName);
-                var  $msg = $('<span class="msg">').text(data.msg);
-                var $li = $("<li>").append($userName, $msg);
-                $('#messages').append($li);
+                appendMessage(data);
+            });
+
+            socket.on('logout', function (data) {
+                console.log("다른곳에서 로그인 되었습니다");
+                window.location = "/login";
             });
         });
 

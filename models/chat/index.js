@@ -5,6 +5,7 @@ var path = require('path');
 var rootDir = path.dirname(require.main.filename);
 var db = require(rootDir+'/models/db');
 var Sequalize = require('sequelize');
+var User = require(rootDir+'/models/user');
 
 var Chat = db.define('chat', {
     seq : {
@@ -25,7 +26,16 @@ var Chat = db.define('chat', {
             notEmpty : true
         }
     }
+}, {
+    instanceMethods : {
+        convertJson : function () {
+            return { msg : this.msg, userId : this.user.id , userName : this.user.name, seq : this.seq };
+        }
+    }
 });
+
+
+Chat.belongsTo(User, {foreignKey : 'id', targetKey : 'id'});
 
 Chat.sync();
 

@@ -9,10 +9,10 @@ var User = require(rootDir+'/models/user');
 members.get('/', function (req, res) {
     User.findAll()
         .then(function (users) {
-            res.send(users.map(user => user.get({plain: true})));
+            res.json(users.map(user => user.get({plain: true})));
         })
         .catch(function (err) {
-            res.send(err);
+            res.json(err);
         });
 });
 
@@ -20,10 +20,11 @@ members.post('/validate', function (req, res) {
     User.build(req.body)
         .validate()
         .then(function (err) {
-            res.send(err);
+            var data = {hasError : err? true : false, errors : err};
+            res.json(data);
         })
         .catch(function (err) {
-            res.send(err);
+            res.json(err);
         });
 });
 

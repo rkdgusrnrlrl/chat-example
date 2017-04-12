@@ -6,10 +6,13 @@ var rootDir = path.dirname(require.main.filename);
 var login = require('express').Router();
 var User = require(rootDir+'/models/user');
 var LoginService = require(rootDir+'/services/LoginService');
+var bcrypt = require('bcrypt');
 
 login.get('/', function (req, res) {
-    res.sendFile(rootDir+"/login.html");
+    res.render(rootDir+"/views/login", {});
 });
+
+
 
 login.post('/', function (req, res) {
     var param = req.body;
@@ -22,19 +25,23 @@ login.post('/', function (req, res) {
             if (result.count == 1) {
                 var user = result.rows[0];
                 var plainUser = user.get({plain : true});
-                if (user.password === param.password) {
+                var isEquls = bcrypt.compareSync(param.password, user.password);
+                if (isEquls) {
                     var session = req.session;
                     LoginService.logind(session, user);
                     res.redirect('/');
                 } else {
-                    res.send("패스워드 불일치");
+                    //패스워드 불일치
+                    res.render(rootDir+"/views/login", { id : param.id, error : { msg : "잘못된 아이디나 패드워드입니다."} });
                 }
             } else {
-                res.send("없는 아이디");
+                //아이디 불일치
+                res.render(rootDir+"/views/login",  { id : param.id, error : { msg : "잘못된 아이디나 패드워드입니다."} });
             }
         })
         .catch(function (err) {
-            res.send(err);
+            //아이디 불일치
+            res.render(rootDir+"/views/login", {});
         })
 });
 

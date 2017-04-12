@@ -7,20 +7,27 @@ var rootDir = path.dirname(require.main.filename);
 var memberRegister = require('express').Router();
 var User = require(rootDir+'/models/user');
 var LoginService = require(rootDir+'/services/LoginService');
+var bcrypt = require('bcrypt');
 
 
 memberRegister.get('/', function (req, res) {
-    res.sendFile(rootDir+"/register.html");
+    res.sendFile(rootDir+"/views/register.html");
 });
 
 memberRegister.post('/', function (req, res) {
-    User.create(req.body)
+    bcrypt.hash(req.body.password, 10)
+        .then(hashPassword => {
+            var user = req.body;
+            user.password = hashPassword;
+            user.password_re = hashPassword;
+            return User.create(user)
+        })
         .then(function (user) {
             LoginService.logind(req.session, user.toJSON());
-            res.sendFile(rootDir+"/index.html");
+            res.sendFile(rootDir+"/view/index.html");
         })
         .catch(function (err) {
-            res.send(err);
+            res.json(err);
         });
 });
 
