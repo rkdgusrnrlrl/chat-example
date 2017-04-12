@@ -66,18 +66,19 @@ io.on('connection', function (socket) {
 
     //TODO 같은 아이디로 로그인시 해당 소캣에 logout 이벤트 emit
 
-
-
     Chat.count()
         .then((cnt) => {
+            var isFirstChat = !(cnt > 20);
+            var limit = isFirstChat ? cnt : 20;
             return Chat.findAll({
-                offset : cnt - 20,
-                order : [['createdAt', 'ASC']],
+                limit : limit,
+                order : [['createdAt', 'DESC']],
                 include : [{model : User}]
-            });
-        })
-        .then(chats => chats.map(chat => chat.convertJson()))
-        .then(chats => socket.emit('init message', chats));
+            })
+                .then(chats => chats.map(chat => chat.convertJson()))
+                .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
+        });
+
 
     socket.on('disconnect', function () {
         console.log("a user disconnected");
@@ -86,6 +87,31 @@ io.on('connection', function (socket) {
         Chat.create({id: userId, msg : msg})
             .then(chat => chat.reload({include : [{model:User}]}))
             .then(chat => io.emit('chat message', chat.convertJson()))
+    });
+
+    socket.on('previous chat', function (seq) {
+        Chat.count({where : {
+            seq : {
+                $lt : seq
+            }
+        }})
+            .then((cnt) => {
+                var isFirstChat = !(cnt > 20);
+                var limit = isFirstChat ? cnt : 20;
+                return Chat.findAll({
+                    where : {
+                        seq : {
+                            $lt : seq
+                        }
+                    },
+                    limit : limit,
+                    order : [['createdAt', 'DESC']],
+                    include : [{model : User}]
+                })
+                    .then(chats => chats.map(chat => chat.convertJson()))
+                    .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
+            });
+
     });
 });
 

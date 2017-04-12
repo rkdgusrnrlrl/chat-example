@@ -22,23 +22,36 @@
         function appendMessage(data) {
             var $userName = $('<span class="msg">').text(data.userName);
             var $msg = $('<span class="msg">').text(data.msg);
-            var $li = $("<li>").append($userName, $msg);
-            $('#messages').append($li);
+            var $li = $("<li class='t_msg' seq='"+data.seq+"'>").append($userName, $msg);
+            $('#messages').prepend($li);
         }
+
         $(function () {
             var socket = io();
 
-
             $('form').submit(function () {
                 socket.emit('chat message', $('#m').val());
+                $('#m').val('');
                 return false;
             });
 
-            socket.on('init message', function (chats) {
-                console.log(chats);
+            function requestPriChat() {
+                var firstChatSeq = $('#messages').find('.t_msg').attr('seq');
+                socket.emit('previous chat', firstChatSeq);
+            }
+
+            socket.on('init message', function (data) {
+                $('.t_btn_pre').remove();
+                var chats = data.chats;
                 _.each(chats, function (chat) {
                     appendMessage(chat);
-                })
+                });
+                if(!data.isFirstChat) {
+                    var $preButton = $('<button class="pri_chat">').text("이전 대화 내용 보기");
+                    $preButton.click(requestPriChat);
+                    var $li = $("<li class='t_btn_pre'>").append($preButton);
+                    $('#messages').prepend($li);
+                }
             });
 
             socket.on('chat message', function (data) {
