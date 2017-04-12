@@ -74,10 +74,10 @@ io.on('connection', function (socket) {
                 limit : limit,
                 order : [['createdAt', 'DESC']],
                 include : [{model : User}]
-            });
-        })
-        .then(chats => chats.map(chat => chat.convertJson()))
-        .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
+            })
+                .then(chats => chats.map(chat => chat.convertJson()))
+                .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
+        });
 
     socket.on('disconnect', function () {
         console.log("a user disconnected");
