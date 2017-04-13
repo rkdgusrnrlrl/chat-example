@@ -19,12 +19,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        function appendMessage(data) {
+        function prependMessage(data) {
             var $userName = $('<span class="msg">').text(data.userName);
             var $msg = $('<span class="msg">').text(data.msg);
             var $li = $("<li class='t_msg' seq='"+data.seq+"'>").append($userName, $msg);
             $('#messages').prepend($li);
         }
+
+        function appendMessage(data) {
+            var $userName = $('<span class="msg">').text(data.userName);
+            var $msg = $('<span class="msg">').text(data.msg);
+            var $li = $("<li class='t_msg' seq='"+data.seq+"'>").append($userName, $msg);
+            $('#messages').append($li);
+        }
+
+
+
 
         $(function () {
             var socket = io();
@@ -44,7 +54,7 @@
                 $('.t_btn_pre').remove();
                 var chats = data.chats;
                 _.each(chats, function (chat) {
-                    appendMessage(chat);
+                    prependMessage(chat);
                 });
                 if(!data.isFirstChat) {
                     var $preButton = $('<button class="pri_chat">').text("이전 대화 내용 보기");
