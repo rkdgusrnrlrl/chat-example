@@ -52,57 +52,28 @@ app.get('/', function (req, res) {
 
 
 io.on('connection', function (socket) {
-    var userId = socket.request.session.logindUser.id;
-    var userName = socket.request.session.logindUser.name;
+    if (!socket.request.session.isLogined) {
+        socket.emit('logout');
+    } else {
+        var userId = socket.request.session.logindUser.id;
+        var userName = socket.request.session.logindUser.name;
 
-    Session.findOne({where : {
-        sid : socket.request.sessionID
-    }})
-        .then(session => {
-            var json = JSON.parse(session.get('sess'));
-            json['socket_id'] = socket.id;
-            session.update({sess : JSON.stringify(json)});
-        });
-
-    //TODO 같은 아이디로 로그인시 해당 소캣에 logout 이벤트 emit
-
-    Chat.count()
-        .then((cnt) => {
-            var isFirstChat = !(cnt > 20);
-            var limit = isFirstChat ? cnt : 20;
-            return Chat.findAll({
-                limit : limit,
-                order : [['createdAt', 'DESC']],
-                include : [{model : User}]
-            })
-                .then(chats => chats.map(chat => chat.convertJson()))
-                .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
-        });
-
-    socket.on('disconnect', function () {
-        console.log("a user disconnected");
-    });
-    socket.on('chat message', function (msg) {
-        Chat.create({id: userId, msg : msg})
-            .then(chat => chat.reload({include : [{model:User}]}))
-            .then(chat => io.emit('chat message', chat.convertJson()))
-    });
-
-    socket.on('previous chat', function (seq) {
-        Chat.count({where : {
-            seq : {
-                $lt : seq
-            }
+        Session.findOne({where : {
+            sid : socket.request.sessionID
         }})
+            .then(session => {
+                var json = JSON.parse(session.get('sess'));
+                json['socket_id'] = socket.id;
+                session.update({sess : JSON.stringify(json)});
+            });
+
+        //TODO 같은 아이디로 로그인시 해당 소캣에 logout 이벤트 emit
+
+        Chat.count()
             .then((cnt) => {
                 var isFirstChat = !(cnt > 20);
                 var limit = isFirstChat ? cnt : 20;
                 return Chat.findAll({
-                    where : {
-                        seq : {
-                            $lt : seq
-                        }
-                    },
                     limit : limit,
                     order : [['createdAt', 'DESC']],
                     include : [{model : User}]
@@ -111,7 +82,40 @@ io.on('connection', function (socket) {
                     .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
             });
 
-    });
+        socket.on('disconnect', function () {
+            console.log("a user disconnected");
+        });
+        socket.on('chat message', function (msg) {
+            Chat.create({id: userId, msg : msg})
+                .then(chat => chat.reload({include : [{model:User}]}))
+                .then(chat => io.emit('chat message', chat.convertJson()))
+        });
+
+        socket.on('previous chat', function (seq) {
+            Chat.count({where : {
+                seq : {
+                    $lt : seq
+                }
+            }})
+                .then((cnt) => {
+                    var isFirstChat = !(cnt > 20);
+                    var limit = isFirstChat ? cnt : 20;
+                    return Chat.findAll({
+                        where : {
+                            seq : {
+                                $lt : seq
+                            }
+                        },
+                        limit : limit,
+                        order : [['createdAt', 'DESC']],
+                        include : [{model : User}]
+                    })
+                        .then(chats => chats.map(chat => chat.convertJson()))
+                        .then(chats => socket.emit('init message', { isFirstChat : isFirstChat ,chats :chats}));
+                });
+
+        });
+    }
 });
 
 io.emit('some event', {for : 'everyone'});
